@@ -3,6 +3,7 @@ import { ConfigModule } from "@nestjs/config";
 import { UploadsModule } from "./uploads/uploads.module";
 import { EventsModule } from "./events/events.module";
 import { PhotosModule } from "./photos/photos.module";
+import { JobsModule } from "./jobs/jobs.module";
 import configuration from "./config/configuration";
 
 @Module({
@@ -14,6 +15,7 @@ import configuration from "./config/configuration";
     UploadsModule,
     EventsModule,
     PhotosModule,
+    JobsModule,
   ],
 })
 export class AppModule {}

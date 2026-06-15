@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "feat",
   "description": "PHASE 3 - Background worker service with BullMQ, Sharp 6-preset image processing (with color neutralization heuristic), watermarking, thumbnail/social sizing, and InsightFace embedding extraction.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create apps/worker/src/main.ts - NestJS microservice bootstrap connecting to BullMQ/Redis",
     "Create apps/worker/src/app.module.ts - root module importing BullModule, ProcessingModule, configuring Redis connection from env",
