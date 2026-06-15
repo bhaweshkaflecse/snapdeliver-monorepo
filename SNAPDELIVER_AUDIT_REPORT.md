@@ -184,16 +184,16 @@ CREATE TABLE "face_embeddings" (
 
 The `embedding` column uses `vector(512)` type, matching InsightFace's 512-dimensional face embedding output.
 
-### IVFFlat Index
+### HNSW Index
 
 **File: `packages/database/prisma/migrations/00001_init/migration.sql`**
 
 ```sql
 CREATE INDEX "face_embeddings_embedding_idx" ON "face_embeddings"
-USING ivfflat ("embedding" vector_cosine_ops) WITH (lists = 100);
+USING hnsw ("embedding" vector_cosine_ops) WITH (m = 16, ef_construction = 64);
 ```
 
-An IVFFlat index with `vector_cosine_ops` operator class accelerates cosine similarity queries. Configured with 100 lists for balanced recall/speed.
+An HNSW index with `vector_cosine_ops` operator class accelerates cosine similarity queries. Unlike IVFFlat (which requires pre-existing data to cluster), HNSW builds a navigable small-world graph that works correctly from the first insert. Configured with m=16 connections per layer and ef_construction=64 for balanced recall and build speed.
 
 ### search_wedding_photos RPC Function
 
@@ -332,7 +332,7 @@ The `<=>` operator computes cosine distance between vectors. The function conver
   |  /events/{id}/thumbnails/ |       |  photos table             |
   |  /events/{id}/social/     |       |  face_embeddings table    |
   |                           |       |    - vector(512) column   |
-  +---------------------------+       |    - IVFFlat index         |
+  +---------------------------+       |    - HNSW index            |
          ^                            |    - search_wedding_photos |
          |                            +---------------------------+
          | (3) Direct PUT upload

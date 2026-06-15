@@ -47,9 +47,9 @@ CREATE INDEX "photos_event_id_idx" ON "photos"("event_id");
 -- CreateIndex
 CREATE INDEX "face_embeddings_photo_id_idx" ON "face_embeddings"("photo_id");
 
--- CreateIndex (IVFFlat index for vector similarity search)
+-- CreateIndex (HNSW index for vector similarity search)
 CREATE INDEX "face_embeddings_embedding_idx" ON "face_embeddings"
-USING ivfflat ("embedding" vector_cosine_ops) WITH (lists = 100);
+USING hnsw ("embedding" vector_cosine_ops) WITH (m = 16, ef_construction = 64);
 
 -- AddForeignKey
 ALTER TABLE "photos"

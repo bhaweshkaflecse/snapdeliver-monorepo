@@ -118,40 +118,39 @@ export class PresetService {
       return this.presets["Indoor Low Light"];
     }
 
-    // Golden hour: warm white balance or low exposure time with moderate ISO
+    // Golden hour: warm light source (cloudy or shade)
     if (
-      exif.whiteBalance &&
-      (exif.whiteBalance.toLowerCase().includes("cloudy") ||
-        exif.whiteBalance.toLowerCase().includes("shade"))
+      exif.lightSource &&
+      (exif.lightSource.toLowerCase().includes("cloudy") ||
+        exif.lightSource.toLowerCase().includes("shade"))
     ) {
       this.logger.debug(
-        "Selected preset: Golden Hour (warm white balance detected)"
+        "Selected preset: Golden Hour (warm light source detected)"
       );
       return this.presets["Golden Hour"];
     }
 
-    // Outdoor bright: low ISO, daylight white balance
+    // Outdoor bright: low ISO, daylight light source
     if (
       exif.iso &&
       exif.iso <= 400 &&
-      exif.whiteBalance &&
-      (exif.whiteBalance.toLowerCase().includes("daylight") ||
-        exif.whiteBalance.toLowerCase().includes("auto"))
+      exif.lightSource &&
+      exif.lightSource.toLowerCase().includes("daylight")
     ) {
       this.logger.debug(
-        "Selected preset: Outdoor Bright (low ISO, daylight WB)"
+        "Selected preset: Outdoor Bright (low ISO, daylight light source)"
       );
       return this.presets["Outdoor Bright"];
     }
 
-    // Mixed lighting: tungsten or fluorescent white balance
+    // Mixed lighting: tungsten or fluorescent light source
     if (
-      exif.whiteBalance &&
-      (exif.whiteBalance.toLowerCase().includes("tungsten") ||
-        exif.whiteBalance.toLowerCase().includes("fluorescent"))
+      exif.lightSource &&
+      (exif.lightSource.toLowerCase().includes("tungsten") ||
+        exif.lightSource.toLowerCase().includes("fluorescent"))
     ) {
       this.logger.debug(
-        "Selected preset: Mixed Lighting (tungsten/fluorescent WB)"
+        "Selected preset: Mixed Lighting (tungsten/fluorescent light source)"
       );
       return this.presets["Mixed Lighting"];
     }

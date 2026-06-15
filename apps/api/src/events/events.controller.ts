@@ -10,8 +10,10 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
+  UseGuards,
 } from "@nestjs/common";
 import { EventsService } from "./events.service";
+import { JwtAuthGuard } from "../guards/jwt-auth.guard";
 
 class CreateEventDto {
   name!: string;
@@ -28,6 +30,7 @@ class UpdateEventDto {
 }
 
 @Controller("events")
+@UseGuards(JwtAuthGuard)
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 

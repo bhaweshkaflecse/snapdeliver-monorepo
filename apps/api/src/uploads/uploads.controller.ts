@@ -5,14 +5,17 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  UseGuards,
 } from "@nestjs/common";
 import { UploadsService } from "./uploads.service";
 import {
   PresignedUrlRequest,
   CompleteUploadRequest,
 } from "@snapdeliver/shared-types";
+import { ApiKeyGuard } from "../guards/api-key.guard";
 
 @Controller("uploads")
+@UseGuards(ApiKeyGuard)
 export class UploadsController {
   constructor(private readonly uploadsService: UploadsService) {}
 

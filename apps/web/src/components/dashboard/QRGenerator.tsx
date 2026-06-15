@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/Button";
 
 interface QRGeneratorProps {
@@ -9,83 +10,50 @@ interface QRGeneratorProps {
 }
 
 /**
- * Generates a QR code for the guest portal URL.
- * Uses a simple SVG-based QR code representation.
- * In production, replace with a proper QR library.
+ * Generates a scannable QR code for the guest portal URL using qrcode.react.
+ * Supports PNG download and copy-link functionality.
  */
 export function QRGenerator({ eventId, eventName }: QRGeneratorProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null!);
+  const svgContainerRef = useRef<HTMLDivElement>(null!);
   const portalUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/${eventId}`
       : `/${eventId}`;
 
-  // Simple QR pattern rendering (placeholder for qrcode library)
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const size = 200;
-    canvas.width = size;
-    canvas.height = size;
-
-    // Draw a placeholder QR pattern
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, size, size);
-
-    ctx.fillStyle = "#000000";
-    const cellSize = size / 25;
-
-    // Draw finder patterns (corners)
-    const drawFinder = (x: number, y: number) => {
-      ctx.fillRect(x * cellSize, y * cellSize, 7 * cellSize, 7 * cellSize);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(
-        (x + 1) * cellSize,
-        (y + 1) * cellSize,
-        5 * cellSize,
-        5 * cellSize
-      );
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(
-        (x + 2) * cellSize,
-        (y + 2) * cellSize,
-        3 * cellSize,
-        3 * cellSize
-      );
-    };
-
-    drawFinder(1, 1);
-    drawFinder(17, 1);
-    drawFinder(1, 17);
-
-    // Simple data pattern based on eventId hash
-    let hash = 0;
-    for (let i = 0; i < eventId.length; i++) {
-      hash = (hash << 5) - hash + eventId.charCodeAt(i);
-      hash |= 0;
-    }
-
-    for (let row = 9; row < 16; row++) {
-      for (let col = 1; col < 24; col++) {
-        if ((hash ^ (row * col)) % 3 === 0) {
-          ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
-        }
-      }
-    }
-  }, [eventId]);
-
   const handleDownload = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const container = svgContainerRef.current;
+    if (!container) return;
 
-    const link = document.createElement("a");
-    link.download = `qr-${eventName.replace(/\s+/g, "-").toLowerCase()}.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+    const svgElement = container.querySelector("svg");
+    if (!svgElement) return;
+
+    // Convert SVG to canvas for PNG export
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const svgBlob = new Blob([svgData], {
+      type: "image/svg+xml;charset=utf-8",
+    });
+    const url = URL.createObjectURL(svgBlob);
+
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 200;
+      canvas.height = 200;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, 200, 200);
+      ctx.drawImage(img, 0, 0, 200, 200);
+
+      const link = document.createElement("a");
+      link.download = `qr-${eventName.replace(/\s+/g, "-").toLowerCase()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
   }, [eventName]);
 
   const handleCopyLink = useCallback(async () => {
@@ -106,12 +74,17 @@ export function QRGenerator({ eventId, eventName }: QRGeneratorProps) {
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900">Guest Portal QR</h3>
       <div className="flex flex-col items-center space-y-3">
-        <canvas
-          ref={canvasRef}
-          className="border border-gray-200 rounded-lg"
-          width={200}
-          height={200}
-        />
+        <div
+          ref={svgContainerRef}
+          className="border border-gray-200 rounded-lg p-2 bg-white"
+        >
+          <QRCodeSVG
+            value={portalUrl}
+            size={200}
+            level="M"
+            includeMargin={false}
+          />
+        </div>
         <p className="text-xs text-gray-500 text-center break-all max-w-[200px]">
           {portalUrl}
         </p>

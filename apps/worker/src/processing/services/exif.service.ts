@@ -5,6 +5,7 @@ export interface ExifData {
   iso: number | null;
   aperture: number | null;
   whiteBalance: string | null;
+  lightSource: string | null;
   flash: boolean;
   exposureTime: number | null;
   focalLength: number | null;
@@ -33,6 +34,7 @@ export class ExifService {
         iso: this.extractNumeric(exif, "ISOSpeedRatings") ?? null,
         aperture: this.extractNumeric(exif, "FNumber") ?? null,
         whiteBalance: this.extractString(exif, "WhiteBalance") ?? null,
+        lightSource: this.extractLightSource(exif),
         flash: this.extractFlash(exif),
         exposureTime: this.extractNumeric(exif, "ExposureTime") ?? null,
         focalLength: this.extractNumeric(exif, "FocalLength") ?? null,
@@ -43,6 +45,7 @@ export class ExifService {
         iso: null,
         aperture: null,
         whiteBalance: null,
+        lightSource: null,
         flash: false,
         exposureTime: null,
         focalLength: null,
@@ -184,6 +187,10 @@ export class ExifService {
                 }
                 break;
 
+              case 0x9208: // LightSource
+                result["LightSource"] = readUInt16(valueOffset);
+                break;
+
               case 0xa403: // WhiteBalance
                 result["WhiteBalance"] =
                   readUInt16(valueOffset) === 0 ? "Auto" : "Manual";
@@ -216,6 +223,44 @@ export class ExifService {
       case 10: return 8; // SRATIONAL
       default: return 1;
     }
+  }
+
+  /**
+   * Maps the EXIF LightSource tag (0x9208) value to a human-readable string.
+   * Unlike WhiteBalance (which only returns Auto/Manual), LightSource contains
+   * the actual lighting condition (Daylight, Tungsten, Fluorescent, etc.)
+   */
+  private extractLightSource(
+    exif: Record<string, string | number | undefined>
+  ): string | null {
+    const val = exif["LightSource"];
+    if (typeof val !== "number") return null;
+
+    const lightSourceMap: Record<number, string> = {
+      0: "Unknown",
+      1: "Daylight",
+      2: "Fluorescent",
+      3: "Tungsten",
+      4: "Flash",
+      9: "Fine Weather",
+      10: "Cloudy",
+      11: "Shade",
+      12: "Daylight Fluorescent",
+      13: "Day White Fluorescent",
+      14: "Cool White Fluorescent",
+      15: "White Fluorescent",
+      17: "Standard Light A",
+      18: "Standard Light B",
+      19: "Standard Light C",
+      20: "D55",
+      21: "D65",
+      22: "D75",
+      23: "D50",
+      24: "ISO Studio Tungsten",
+      255: "Other",
+    };
+
+    return lightSourceMap[val] ?? null;
   }
 
   private extractNumeric(
