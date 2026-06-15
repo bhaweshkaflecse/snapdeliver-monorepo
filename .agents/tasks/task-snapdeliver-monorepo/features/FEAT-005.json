@@ -2,7 +2,7 @@
   "id": "FEAT-005",
   "type": "feat",
   "description": "PHASE 4 - Next.js web application with Photographer Dashboard (event creation, analytics) and Guest Portal (selfie capture, face search, native share).",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create apps/web/next.config.js - Next.js config with image domains for R2, env variable passthrough",
     "Create apps/web/tailwind.config.ts - Tailwind config with custom colors for SnapDeliver brand",

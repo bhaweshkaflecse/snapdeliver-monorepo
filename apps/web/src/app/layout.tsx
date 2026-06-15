@@ -1,4 +1,12 @@
-// Next.js root layout
+import type { Metadata } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "SnapDeliver - Photo Delivery Platform",
+  description:
+    "AI-powered photo delivery for event photographers. Instant face matching and sharing.",
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -6,7 +14,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   );
 }
