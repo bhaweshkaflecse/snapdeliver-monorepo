@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "PHASE 1 - Data Layer: Prisma schema with pgvector, SQL migrations for cosine similarity search, and Zod shared types for all API payloads.",
+  "status": "pending",
+  "steps": [
+    "Create packages/database/prisma/schema.prisma with: Event model (id UUID, name String, date DateTime, expiry DateTime, pricing_tier enum FREE/STANDARD/PREMIUM), Photo model (id UUID, event_id FK, original_key String, social_key String, thumbnail_key String, metadata_json Json), FaceEmbedding model (id UUID, photo_id FK, embedding Unsupported('vector(512)')). Use postgresql provider with pgvector extension.",
+    "Create packages/database/prisma/migrations/00001_init/migration.sql - full DDL for creating tables with proper indexes, foreign keys, and the pgvector extension (CREATE EXTENSION IF NOT EXISTS vector)",
+    "Create packages/database/prisma/migrations/00002_search_function/migration.sql - the search_wedding_photos RPC function using cosine similarity: takes a query_embedding vector(512) and match_threshold float, returns photos ordered by similarity using the <=> operator",
+    "Create packages/database/src/index.ts - exports PrismaClient instance with proper connection pooling config from DATABASE_URL env",
+    "Create packages/database/src/client.ts - singleton PrismaClient factory",
+    "Create packages/database/tsconfig.json extending root tsconfig",
+    "Create packages/shared-types/src/index.ts - barrel export file",
+    "Create packages/shared-types/src/schemas/event.schema.ts - Zod schemas: CreateEventInput (name, date, expiry, pricing_tier), EventResponse, UpdateEventInput",
+    "Create packages/shared-types/src/schemas/upload.schema.ts - Zod schemas: PresignedUrlRequest (event_id, file_name, file_size, content_type, total_chunks), PresignedUrlResponse (upload_id, urls array, chunk_size), CompleteUploadRequest",
+    "Create packages/shared-types/src/schemas/photo.schema.ts - Zod schemas: PhotoMetadata, PhotoResponse, FaceSearchRequest (embedding vector), FaceSearchResponse",
+    "Create packages/shared-types/src/schemas/common.schema.ts - shared Zod schemas: PaginationInput, PaginatedResponse, ApiError, UUID validator",
+    "Create packages/shared-types/tsconfig.json extending root tsconfig"
+  ],
+  "acceptance_criteria": [
+    "Prisma schema defines Event, Photo, FaceEmbedding models with correct field types",
+    "FaceEmbedding uses vector(512) type via Unsupported annotation for pgvector",
+    "SQL migration includes CREATE EXTENSION IF NOT EXISTS vector",
+    "search_wedding_photos function uses cosine distance operator (<=>)",
+    "All Zod schemas export inferred TypeScript types using z.infer",
+    "Shared types package has barrel export from src/index.ts"
+  ],
+  "verification": [
+    "Verify Prisma schema file exists and contains all 3 models with correct relations",
+    "Verify migration SQL files exist and contain pgvector extension + search function",
+    "Verify Zod schemas export both schema objects and inferred types"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

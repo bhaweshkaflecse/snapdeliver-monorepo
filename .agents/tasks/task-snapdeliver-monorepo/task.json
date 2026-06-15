@@ -1,0 +1,7 @@
+{
+  "task_id": "task-snapdeliver-monorepo",
+  "task_description": "Build SnapDeliver, an MNC-grade photo delivery SaaS monorepo for wedding photographers optimized for Nepal market. Includes: Prisma/pgvector data layer, NestJS API with R2 presigned uploads, Tauri desktop with offline-first queue, BullMQ worker with Sharp 6-preset processing and InsightFace extraction, Next.js web portals (dashboard + guest portal with selfie face search and native share).",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004", "FEAT-005", "FEAT-006"],
+  "blocked_reason": null
+}

@@ -1,0 +1,50 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "PHASE 4 - Next.js web application with Photographer Dashboard (event creation, analytics) and Guest Portal (selfie capture, face search, native share).",
+  "status": "pending",
+  "steps": [
+    "Create apps/web/next.config.js - Next.js config with image domains for R2, env variable passthrough",
+    "Create apps/web/tailwind.config.ts - Tailwind config with custom colors for SnapDeliver brand",
+    "Create apps/web/postcss.config.js - PostCSS with Tailwind and autoprefixer",
+    "Create apps/web/tsconfig.json - Next.js TypeScript config with path aliases",
+    "Create apps/web/src/app/layout.tsx - root layout with Tailwind global styles, font loading, metadata",
+    "Create apps/web/src/app/page.tsx - landing page with links to dashboard and portal",
+    "Create apps/web/src/app/(dashboard)/layout.tsx - dashboard layout with sidebar navigation (Events, Analytics, Settings)",
+    "Create apps/web/src/app/(dashboard)/events/page.tsx - event list page with create button, shows all events with status",
+    "Create apps/web/src/app/(dashboard)/events/create/page.tsx - event creation form using Zod schema validation (name, date, expiry, pricing tier selector)",
+    "Create apps/web/src/app/(dashboard)/events/[id]/page.tsx - single event detail with photo gallery, QR code generation, stats",
+    "Create apps/web/src/app/(dashboard)/analytics/page.tsx - analytics dashboard showing QR scans, downloads, shares count per event to prove ROI. Charts/metrics display.",
+    "Create apps/web/src/app/(portal)/layout.tsx - mobile-first portal layout, minimal chrome, full viewport",
+    "Create apps/web/src/app/(portal)/[eventId]/page.tsx - event portal entry, shows event name and selfie capture prompt",
+    "Create apps/web/src/app/(portal)/[eventId]/selfie/page.tsx - selfie capture UI using getUserMedia API. Captures photo from front camera, shows preview, sends to API for face vector extraction.",
+    "Create apps/web/src/app/(portal)/[eventId]/results/page.tsx - displays matching photos from pgvector search results in a grid. Each photo card has download button AND native share button.",
+    "Create apps/web/src/components/ui/Button.tsx, Card.tsx, Input.tsx, Select.tsx - basic UI primitives with Tailwind",
+    "Create apps/web/src/components/dashboard/EventCard.tsx, StatsCard.tsx, QRGenerator.tsx - dashboard-specific components",
+    "Create apps/web/src/components/portal/SelfieCapture.tsx - camera capture component with getUserMedia, canvas snapshot, preview/retake flow",
+    "Create apps/web/src/components/portal/PhotoGrid.tsx - responsive image grid for search results",
+    "Create apps/web/src/components/portal/ShareButton.tsx - implements navigator.share() Web Share API for 1-tap sharing to Instagram/WhatsApp with Social HD watermarked version. Falls back to download if share not supported.",
+    "Create apps/web/src/lib/api-client.ts - typed API client wrapping fetch for all API endpoints (events, uploads, face search)",
+    "Create apps/web/src/lib/face-search.ts - sends captured selfie to API, receives matching photos array",
+    "Create apps/web/src/hooks/useCamera.ts - React hook for getUserMedia camera access with cleanup",
+    "Create apps/web/src/hooks/useShare.ts - React hook wrapping navigator.share() with feature detection and fallback"
+  ],
+  "acceptance_criteria": [
+    "Dashboard has event creation flow with proper form validation using Zod schemas",
+    "Analytics page shows QR scans, downloads, and shares metrics",
+    "Guest portal is mobile-first with selfie capture using getUserMedia",
+    "Selfie is sent to API for vector extraction and pgvector search",
+    "ShareButton implements navigator.share() for native sharing to Instagram/WhatsApp",
+    "ShareButton falls back to download when Web Share API is not available",
+    "All API calls go through typed api-client.ts, no hardcoded URLs",
+    "NEXT_PUBLIC_API_URL env var used for API base URL"
+  ],
+  "verification": [
+    "Verify apps/web/src/components/portal/ShareButton.tsx uses navigator.share() with fallback",
+    "Verify apps/web/src/components/portal/SelfieCapture.tsx uses getUserMedia for camera",
+    "Verify apps/web/src/lib/api-client.ts reads base URL from NEXT_PUBLIC_API_URL env var",
+    "Verify apps/web/src/app/(dashboard)/analytics/page.tsx shows QR scans, downloads, shares"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

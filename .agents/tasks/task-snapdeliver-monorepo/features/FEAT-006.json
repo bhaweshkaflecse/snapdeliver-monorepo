@@ -1,0 +1,28 @@
+{
+  "id": "FEAT-006",
+  "type": "docs",
+  "description": "Generate the SNAPDELIVER_AUDIT_REPORT.md at root with comprehensive system audit covering env variable map, API bottleneck check, upload flow verification, and vector search check.",
+  "status": "pending",
+  "steps": [
+    "Create SNAPDELIVER_AUDIT_REPORT.md at project root with the following sections:",
+    "Section 1 - Environment Variable Map: Complete checklist of every .env variable required across all apps (api, worker, web, desktop) with descriptions and which service uses each",
+    "Section 2 - API Bottleneck Check: Confirmation that NestJS main thread only dispatches jobs via BullMQ and never processes images or runs InsightFace. Reference specific files that prove this (apps/api/src/jobs/jobs.service.ts dispatches, apps/worker processes)",
+    "Section 3 - Upload Flow Verification: Step-by-step flow: Tauri app -> API (get presigned URLs) -> direct R2 upload (no bytes through API). Reference: apps/desktop/src/lib/chunked-uploader.ts, apps/api/src/uploads/uploads.service.ts",
+    "Section 4 - Vector Search Check: Confirmation that pgvector extension is enabled, migration creates vector(512) column, and search_wedding_photos RPC function uses cosine similarity operator (<=>). Reference migration files.",
+    "Section 5 - Architecture Diagram: ASCII art showing data flow between all services",
+    "Section 6 - Nepal Market Optimizations: Document offline-first queue, color neutralization for party palaces, and mobile-first portal with native share"
+  ],
+  "acceptance_criteria": [
+    "SNAPDELIVER_AUDIT_REPORT.md exists at project root",
+    "Contains all 4 required audit sections plus architecture and Nepal-specific optimizations",
+    "Environment variable map lists every variable from .env.example with service ownership",
+    "Upload flow section clearly shows bytes go directly to R2, not through API",
+    "Vector search section references the actual migration file and function name"
+  ],
+  "verification": [
+    "Verify SNAPDELIVER_AUDIT_REPORT.md exists and contains all required sections",
+    "Verify env var map matches .env.example contents"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

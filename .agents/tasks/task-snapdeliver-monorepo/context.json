@@ -1,0 +1,29 @@
+{
+  "project_type": "TypeScript pnpm monorepo - SaaS photo delivery platform (NestJS API, Tauri desktop, Next.js web, BullMQ worker)",
+  "language": "TypeScript",
+  "build_system": "pnpm workspaces with turbo (no installs possible - INTEGRATIONS_ONLY network)",
+  "test_framework": "vitest for packages, jest for NestJS apps",
+  "build_command": "N/A - cannot install dependencies due to network constraints. Validation via TypeScript compiler (tsc --noEmit) on individual files.",
+  "test_command": "N/A - cannot install dependencies. Verify code correctness via static analysis.",
+  "verification_instructions": "1. Check all files exist with correct structure. 2. Verify TypeScript syntax with tsc where possible. 3. Confirm no hardcoded URLs/credentials. 4. Verify .env.example has all required variables.",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "pnpm install (requires network - not available in sandbox)",
+  "environment_constraints": "INTEGRATIONS_ONLY network - NO external access. Cannot run npm install, pip install, docker pull, or any network-dependent command. Must write all files directly without dependency installation. Node v22 available (use 'unset NODE_OPTIONS &&' prefix). pnpm/tsc/bun available as binaries.",
+  "contribution_requirements": "All source files must be committed. No hardcoded URLs/credentials. Use .env schema. Monorepo structure with pnpm workspaces.",
+  "key_patterns": "Greenfield - establishing patterns: NestJS modules/services/controllers, Prisma schema for DB, Zod for validation, React components with Vite for Tauri, Next.js App Router for web portals, BullMQ for async jobs, Sharp for image processing, pgvector for face embeddings.",
+  "relevant_files": [
+    "pnpm-workspace.yaml",
+    "package.json",
+    "turbo.json",
+    ".env.example",
+    "packages/database/prisma/schema.prisma",
+    "packages/database/migrations/",
+    "packages/shared-types/src/index.ts",
+    "apps/api/src/main.ts",
+    "apps/desktop/src-tauri/",
+    "apps/desktop/src/",
+    "apps/worker/src/main.ts",
+    "apps/web/src/app/"
+  ],
+  "directory_structure": "/ (root) - pnpm monorepo. /packages/database - Prisma schema + migrations. /packages/shared-types - Zod schemas + TypeScript types. /apps/api - NestJS REST API. /apps/desktop - Tauri + React/Vite desktop app. /apps/worker - NestJS microservice with BullMQ. /apps/web - Next.js app with dashboard + portal routes."
+}

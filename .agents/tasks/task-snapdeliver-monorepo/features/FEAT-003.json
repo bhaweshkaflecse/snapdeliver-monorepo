@@ -1,0 +1,47 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "PHASE 2 - NestJS API with multipart upload endpoint for R2 presigned URLs, and Tauri desktop app with chunked uploader and offline-first queue.",
+  "status": "pending",
+  "steps": [
+    "Create apps/api/src/main.ts - NestJS bootstrap with CORS, global prefix /api, ValidationPipe, env config",
+    "Create apps/api/src/app.module.ts - root module importing ConfigModule, UploadsModule, EventsModule, PhotosModule",
+    "Create apps/api/src/config/configuration.ts - typed config factory loading from process.env (R2 credentials, Redis, DB)",
+    "Create apps/api/src/uploads/uploads.module.ts - module with controller, service, R2 provider",
+    "Create apps/api/src/uploads/uploads.controller.ts - POST /uploads/multipart endpoint that validates PresignedUrlRequest and returns presigned URLs for 5MB chunks. Must NOT process raw image bytes.",
+    "Create apps/api/src/uploads/uploads.service.ts - uses @aws-sdk/client-s3 CreateMultipartUploadCommand + UploadPartCommand presigning with @aws-sdk/s3-request-presigner. Returns array of presigned URLs for each chunk. Includes CompleteMultipartUpload and AbortMultipartUpload methods.",
+    "Create apps/api/src/uploads/r2.provider.ts - S3Client factory configured for Cloudflare R2 endpoint using env vars",
+    "Create apps/api/src/events/events.module.ts, events.controller.ts, events.service.ts - CRUD for events using Prisma",
+    "Create apps/api/src/photos/photos.module.ts, photos.controller.ts, photos.service.ts - photo queries, face search endpoint that calls search_wedding_photos RPC",
+    "Create apps/api/tsconfig.json, nest-cli.json for NestJS project config",
+    "Create apps/desktop/src-tauri/tauri.conf.json - Tauri config with app name, window size, allowed APIs (fs, http, dialog)",
+    "Create apps/desktop/src-tauri/Cargo.toml - Tauri Rust dependencies",
+    "Create apps/desktop/src-tauri/src/main.rs - Tauri entry point with commands for file system access",
+    "Create apps/desktop/index.html - Vite entry HTML",
+    "Create apps/desktop/vite.config.ts - Vite config with React plugin and Tauri env handling",
+    "Create apps/desktop/src/App.tsx - main app component with router (Upload page, Queue page, Settings)",
+    "Create apps/desktop/src/components/Dropzone.tsx - SD card ingestion dropzone accepting image files (jpg, png, raw, cr2, nef), shows file count and total size",
+    "Create apps/desktop/src/components/UploadProgress.tsx - shows per-file chunk upload progress with percentage, speed, ETA",
+    "Create apps/desktop/src/lib/chunked-uploader.ts - core upload engine: splits file into 5MB chunks, requests presigned URLs from API, uploads chunks directly to R2 using fetch/XHR, tracks progress, handles retries with exponential backoff",
+    "Create apps/desktop/src/lib/offline-queue.ts - IndexedDB-based queue using idb library pattern. Stores pending uploads when offline, monitors navigator.onLine, auto-resumes on reconnection. Implements pause/resume/retry logic.",
+    "Create apps/desktop/src/lib/network-monitor.ts - detects connectivity changes, emits events for online/offline transitions, debounces rapid flapping",
+    "Create apps/desktop/src/hooks/useUploadQueue.ts - React hook wrapping the offline queue with state management",
+    "Create apps/desktop/tsconfig.json, tailwind.config.js, postcss.config.js for frontend tooling config"
+  ],
+  "acceptance_criteria": [
+    "NestJS API /uploads/multipart endpoint generates presigned URLs without processing image bytes",
+    "R2 provider reads all config from environment variables (R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, etc.)",
+    "Tauri app has a working dropzone component that accepts photo file types",
+    "Chunked uploader splits files into 5MB parts and uploads directly to R2 via presigned URLs",
+    "Offline queue persists to IndexedDB and auto-resumes uploads on network reconnection",
+    "No hardcoded URLs or credentials in any file"
+  ],
+  "verification": [
+    "Verify apps/api/src/uploads/uploads.service.ts uses S3Client with presigning, not raw byte processing",
+    "Verify apps/desktop/src/lib/offline-queue.ts implements IndexedDB persistence and network listener",
+    "Verify apps/desktop/src/lib/chunked-uploader.ts implements 5MB chunk splitting and direct R2 upload",
+    "Grep for hardcoded URLs (http:// or https://) - should only appear in comments"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

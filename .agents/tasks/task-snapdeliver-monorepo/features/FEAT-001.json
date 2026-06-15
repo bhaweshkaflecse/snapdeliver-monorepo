@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-001",
+  "type": "chore",
+  "description": "Set up the pnpm monorepo root structure with workspace configuration, shared tsconfig, turbo.json, .env.example, .gitignore, and all package/app directory scaffolding.",
+  "status": "completed",
+  "steps": [
+    "Create root package.json with pnpm workspaces config, scripts for build/dev/lint across all packages",
+    "Create pnpm-workspace.yaml defining packages/* and apps/* workspaces",
+    "Create turbo.json with pipeline for build, dev, lint, test tasks with proper dependency ordering",
+    "Create root tsconfig.json as base config with strict mode, path aliases",
+    "Create .env.example with ALL environment variables needed across all apps: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_KEY, DATABASE_URL, R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL, REDIS_URL, REDIS_HOST, REDIS_PORT, NEXT_PUBLIC_API_URL, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, WATERMARK_TEXT, INSIGHTFACE_MODEL_PATH",
+    "Create comprehensive .gitignore for Node, Rust/Tauri, .env files, node_modules, dist, .next, target",
+    "Create .npmrc with shamefully-hoist=true for pnpm compatibility",
+    "Create packages/database/package.json with prisma and @prisma/client deps",
+    "Create packages/shared-types/package.json with zod dep",
+    "Create apps/api/package.json with NestJS deps (@nestjs/core, @nestjs/common, @nestjs/platform-express, @aws-sdk/client-s3, @aws-sdk/s3-request-presigner, bullmq)",
+    "Create apps/desktop/package.json with React, Vite, @tauri-apps deps",
+    "Create apps/worker/package.json with NestJS, BullMQ, Sharp, node-insightface deps",
+    "Create apps/web/package.json with Next.js, React, tailwindcss deps"
+  ],
+  "acceptance_criteria": [
+    "Root pnpm-workspace.yaml correctly references packages/* and apps/*",
+    "All package.json files have proper name, version, dependencies listed",
+    ".env.example contains every env var needed by all services with descriptions",
+    "No hardcoded URLs or credentials anywhere",
+    "turbo.json defines build pipeline with correct topological dependencies"
+  ],
+  "verification": [
+    "Verify all expected files exist in the directory structure",
+    "Verify .env.example has at minimum 15 environment variables covering all services",
+    "Verify no hardcoded credentials or URLs in any file (grep for http:// and https:// should only find comments/docs)"
+  ],
+  "blocked_reason": null,
+  "findings": "All 22 env vars in .env.example. No hardcoded URLs. turbo.json omits schema field due to tool restriction."
+}

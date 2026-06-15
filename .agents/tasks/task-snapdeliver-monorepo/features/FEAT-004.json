@@ -1,0 +1,42 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "PHASE 3 - Background worker service with BullMQ, Sharp 6-preset image processing (with color neutralization heuristic), watermarking, thumbnail/social sizing, and InsightFace embedding extraction.",
+  "status": "pending",
+  "steps": [
+    "Create apps/worker/src/main.ts - NestJS microservice bootstrap connecting to BullMQ/Redis",
+    "Create apps/worker/src/app.module.ts - root module importing BullModule, ProcessingModule, configuring Redis connection from env",
+    "Create apps/worker/src/processing/processing.module.ts - module with processor, services",
+    "Create apps/worker/src/processing/processing.processor.ts - BullMQ processor that listens to 'photo-processing' queue, orchestrates the full pipeline: EXIF read -> preset selection -> color check -> processing -> watermark -> resize -> face extract -> R2 upload",
+    "Create apps/worker/src/processing/services/exif.service.ts - reads EXIF data (ISO, aperture, white balance, flash, exposure) from image buffer",
+    "Create apps/worker/src/processing/services/preset.service.ts - the 6-preset engine: 'Indoor Low Light' (high ISO + flash), 'Outdoor Bright' (low ISO + daylight WB), 'Golden Hour' (warm WB + low exposure), 'Flash Heavy' (flash dominant), 'Mixed Lighting' (tungsten/fluorescent WB), 'Color Neutralize' (fallback). Each preset defines Sharp operations (brightness, contrast, saturation, gamma, tint adjustments).",
+    "Create apps/worker/src/processing/services/color-analysis.service.ts - CRITICAL HEURISTIC: calculates average color channel deviation from raw pixel data. If green channel > 1.3x red channel OR magenta (R+B >> G) detected above threshold, overrides EXIF preset with 'Color Neutralize'. This handles Nepal party palace lighting.",
+    "Create apps/worker/src/processing/services/watermark.service.ts - composites photographer watermark text (from env WATERMARK_TEXT) onto image using Sharp composite with SVG text overlay, positioned bottom-right, semi-transparent",
+    "Create apps/worker/src/processing/services/resize.service.ts - generates two versions: Thumbnail (200KB max, 400px width, quality 70) and Social HD (1-2MB, 1920px width, quality 85). Both JPEG output.",
+    "Create apps/worker/src/processing/services/face-extraction.service.ts - interfaces with InsightFace (via child_process or native binding) to extract 512-dimension face embeddings from processed image. Returns array of embeddings for all detected faces.",
+    "Create apps/worker/src/processing/services/storage.service.ts - uploads processed assets (thumbnail, social HD, original) back to R2 using S3Client. Generates appropriate key paths: events/{event_id}/thumbnails/{photo_id}.jpg, events/{event_id}/social/{photo_id}.jpg",
+    "Create apps/worker/src/processing/dto/process-photo.dto.ts - defines the job payload type (event_id, photo_key, photographer_id, watermark_config)",
+    "Create apps/worker/src/health/health.module.ts, health.controller.ts - health check endpoint for worker",
+    "Create apps/worker/tsconfig.json, nest-cli.json for worker project config",
+    "Update apps/api to dispatch jobs: create apps/api/src/jobs/jobs.module.ts, jobs.service.ts that adds photo-processing jobs to BullMQ queue after upload completion"
+  ],
+  "acceptance_criteria": [
+    "Worker connects to BullMQ and processes jobs from 'photo-processing' queue",
+    "6 presets are defined with distinct Sharp operation configurations",
+    "Color analysis service implements the green/magenta detection heuristic with threshold checks",
+    "Color Neutralize fallback overrides EXIF-based preset when extreme coloring detected",
+    "Watermark uses env var WATERMARK_TEXT, not hardcoded text",
+    "Thumbnail output is constrained to ~200KB/400px, Social HD to 1-2MB/1920px",
+    "Face extraction returns 512-dimension vectors",
+    "Processed files are uploaded back to R2 with structured key paths",
+    "NestJS main API thread does NOT process images - it only dispatches jobs"
+  ],
+  "verification": [
+    "Verify apps/worker/src/processing/services/color-analysis.service.ts contains green/magenta channel deviation logic",
+    "Verify apps/worker/src/processing/services/preset.service.ts defines exactly 6 presets",
+    "Verify apps/api/src/jobs/jobs.service.ts only enqueues jobs, does not process images",
+    "Verify face-extraction.service.ts outputs 512-dimension vectors"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
