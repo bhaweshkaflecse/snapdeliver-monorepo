@@ -1,23 +1,16 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
+} from "@nestjs/common";
 import { UploadsService } from "./uploads.service";
-
-class PresignedUrlRequestDto {
-  event_id!: string;
-  file_name!: string;
-  file_size!: number;
-  content_type!: string;
-  total_chunks!: number;
-}
-
-class CompleteUploadRequestDto {
-  upload_id!: string;
-  event_id!: string;
-  parts!: { part_number: number; etag: string }[];
-}
-
-class AbortUploadRequestDto {
-  upload_id!: string;
-}
+import {
+  PresignedUrlRequest,
+  CompleteUploadRequest,
+} from "@snapdeliver/shared-types";
 
 @Controller("uploads")
 export class UploadsController {
@@ -30,13 +23,21 @@ export class UploadsController {
    */
   @Post("multipart")
   @HttpCode(HttpStatus.OK)
-  async initiateMultipartUpload(@Body() body: PresignedUrlRequestDto) {
+  async initiateMultipartUpload(@Body() body: unknown) {
+    const parsed = PresignedUrlRequest.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.flatten().fieldErrors);
+    }
+
+    const { event_id, file_name, file_size, content_type, total_chunks } =
+      parsed.data;
+
     const result = await this.uploadsService.initiateMultipartUpload({
-      eventId: body.event_id,
-      fileName: body.file_name,
-      fileSize: body.file_size,
-      contentType: body.content_type,
-      totalChunks: body.total_chunks,
+      eventId: event_id,
+      fileName: file_name,
+      fileSize: file_size,
+      contentType: content_type,
+      totalChunks: total_chunks,
     });
 
     return {
@@ -48,17 +49,29 @@ export class UploadsController {
 
   /**
    * Complete a multipart upload after all parts have been uploaded directly to R2.
+   * Creates a Photo record and dispatches a processing job.
    */
   @Post("complete")
   @HttpCode(HttpStatus.OK)
-  async completeMultipartUpload(@Body() body: CompleteUploadRequestDto) {
-    await this.uploadsService.completeMultipartUpload({
-      uploadId: body.upload_id,
-      eventId: body.event_id,
-      parts: body.parts,
+  async completeMultipartUpload(@Body() body: unknown) {
+    const parsed = CompleteUploadRequest.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.flatten().fieldErrors);
+    }
+
+    const { upload_id, event_id, parts } = parsed.data;
+
+    const result = await this.uploadsService.completeMultipartUpload({
+      uploadId: upload_id,
+      eventId: event_id,
+      parts,
     });
 
-    return { success: true };
+    return {
+      success: true,
+      photo_id: result.photoId,
+      job_id: result.jobId,
+    };
   }
 
   /**
@@ -66,7 +79,11 @@ export class UploadsController {
    */
   @Post("abort")
   @HttpCode(HttpStatus.OK)
-  async abortMultipartUpload(@Body() body: AbortUploadRequestDto) {
+  async abortMultipartUpload(@Body() body: { upload_id?: string }) {
+    if (!body.upload_id || typeof body.upload_id !== "string") {
+      throw new BadRequestException("upload_id is required");
+    }
+
     await this.uploadsService.abortMultipartUpload(body.upload_id);
     return { success: true };
   }

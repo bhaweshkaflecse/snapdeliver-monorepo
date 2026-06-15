@@ -9,6 +9,7 @@ import { WatermarkService } from "./services/watermark.service";
 import { ResizeService } from "./services/resize.service";
 import { FaceExtractionService } from "./services/face-extraction.service";
 import { StorageService } from "./services/storage.service";
+import { prisma } from "@snapdeliver/database";
 import * as sharp from "sharp";
 
 /**
@@ -124,8 +125,38 @@ export class ProcessingProcessor extends WorkerHost {
           `Faces: ${faceEmbeddings.length}`
       );
 
-      // TODO: Update database with processed photo paths and face embeddings
-      // This will be handled by a database service in a future iteration
+      // Persist processed photo keys to the database
+      await prisma.photo.update({
+        where: { id: photoId },
+        data: {
+          thumbnail_key: thumbnailResult.key,
+          social_key: socialHdResult.key,
+          metadata_json: {
+            exif: exifData,
+            preset: selectedPreset.name,
+            colorCastOverride: colorAnalysis.shouldOverridePreset,
+            facesDetected: faceEmbeddings.length,
+          },
+        },
+      });
+
+      this.logger.log(`Updated photo ${photoId} with processed keys`);
+
+      // Persist face embeddings to the database
+      if (faceEmbeddings.length > 0) {
+        for (const face of faceEmbeddings) {
+          const embeddingStr = `[${face.embedding.join(",")}]`;
+          await prisma.$executeRawUnsafe(
+            `INSERT INTO face_embeddings (id, photo_id, embedding, created_at) VALUES (gen_random_uuid(), $1, $2::vector, NOW())`,
+            photoId,
+            embeddingStr
+          );
+        }
+
+        this.logger.log(
+          `Inserted ${faceEmbeddings.length} face embedding(s) for photo ${photoId}`
+        );
+      }
     } catch (error) {
       this.logger.error(
         `Failed to process photo ${photoId}: ${error}`,

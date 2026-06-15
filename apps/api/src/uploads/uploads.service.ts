@@ -1,4 +1,4 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Injectable, Inject, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { S3Client } from "@aws-sdk/client-s3";
 import {
@@ -9,6 +9,8 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { R2_CLIENT } from "./r2.provider";
+import { JobsService } from "../jobs/jobs.service";
+import { prisma } from "@snapdeliver/database";
 
 const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -28,11 +30,13 @@ export interface CompleteUploadParams {
 
 @Injectable()
 export class UploadsService {
+  private readonly logger = new Logger(UploadsService.name);
   private readonly bucketName: string;
 
   constructor(
     @Inject(R2_CLIENT) private readonly s3Client: S3Client,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly jobsService: JobsService
   ) {
     this.bucketName = this.configService.get<string>("r2.bucketName") || "";
   }
@@ -90,9 +94,13 @@ export class UploadsService {
 
   /**
    * Completes a multipart upload after all parts have been uploaded.
+   * Creates a Photo record in the database and dispatches a processing job.
    */
-  async completeMultipartUpload(params: CompleteUploadParams): Promise<void> {
-    const { uploadId, parts } = params;
+  async completeMultipartUpload(params: CompleteUploadParams): Promise<{
+    photoId: string;
+    jobId: string;
+  }> {
+    const { uploadId, eventId, parts } = params;
     const [s3UploadId, key] = uploadId.split("::");
 
     const completeCommand = new CompleteMultipartUploadCommand({
@@ -108,6 +116,32 @@ export class UploadsService {
     });
 
     await this.s3Client.send(completeCommand);
+
+    // Create Photo record in the database
+    const photo = await prisma.photo.create({
+      data: {
+        event_id: eventId,
+        original_key: key,
+      },
+    });
+
+    this.logger.log(
+      `Created photo record ${photo.id} for event ${eventId} (key: ${key})`
+    );
+
+    // Dispatch processing job to the worker
+    const jobId = await this.jobsService.dispatchPhotoProcessing({
+      eventId,
+      photoId: photo.id,
+      photoKey: key,
+      photographerId: eventId, // TODO: Replace with actual photographer ID from auth context
+    });
+
+    this.logger.log(
+      `Dispatched processing job ${jobId} for photo ${photo.id}`
+    );
+
+    return { photoId: photo.id, jobId };
   }
 
   /**

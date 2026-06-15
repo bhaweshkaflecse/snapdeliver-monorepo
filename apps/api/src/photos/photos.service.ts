@@ -63,9 +63,9 @@ export class PhotosService {
     >(
       `SELECT * FROM search_wedding_photos($1::vector, $2, $3, $4)`,
       embeddingStr,
-      eventId || null,
       matchThreshold,
-      matchCount
+      matchCount,
+      eventId || null
     );
 
     return results;
