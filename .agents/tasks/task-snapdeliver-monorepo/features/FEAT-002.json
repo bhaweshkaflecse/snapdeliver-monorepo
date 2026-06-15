@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "PHASE 1 - Data Layer: Prisma schema with pgvector, SQL migrations for cosine similarity search, and Zod shared types for all API payloads.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create packages/database/prisma/schema.prisma with: Event model (id UUID, name String, date DateTime, expiry DateTime, pricing_tier enum FREE/STANDARD/PREMIUM), Photo model (id UUID, event_id FK, original_key String, social_key String, thumbnail_key String, metadata_json Json), FaceEmbedding model (id UUID, photo_id FK, embedding Unsupported('vector(512)')). Use postgresql provider with pgvector extension.",
     "Create packages/database/prisma/migrations/00001_init/migration.sql - full DDL for creating tables with proper indexes, foreign keys, and the pgvector extension (CREATE EXTENSION IF NOT EXISTS vector)",
