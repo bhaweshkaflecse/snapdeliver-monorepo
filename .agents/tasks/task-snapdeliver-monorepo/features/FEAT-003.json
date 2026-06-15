@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "PHASE 2 - NestJS API with multipart upload endpoint for R2 presigned URLs, and Tauri desktop app with chunked uploader and offline-first queue.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "Create apps/api/src/main.ts - NestJS bootstrap with CORS, global prefix /api, ValidationPipe, env config",
     "Create apps/api/src/app.module.ts - root module importing ConfigModule, UploadsModule, EventsModule, PhotosModule",
